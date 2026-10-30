@@ -11,19 +11,53 @@ const buds=[
 ["Apple AirPods Pro 3",429,8.8,9.6,9.1,9.2,10,8,5.5,"Claimed","Seamless iPhone integration, ANC and calls.",""],
 ["Sony WF-1000XM6",499,9.4,8.8,7.9,9,8,8,9.2,"Claimed","Excellent sound, but fit and ANC reviews are mixed.",""],
 ["Sennheiser Momentum True Wireless 5",499,9.2,9.1,9.1,8.5,8.1,7.5,9,"Provisional","Newer model with reportedly improved ANC and comfort.",""],
-["Nothing Ear (3)",299,8.7,8.4,8.9,8.2,8,5.3,9.5,"Measured","Highly customisable sound and strong value.","White model reportedly discounted to $159"],
+["Nothing Ear (3)",299,8.7,8.4,8.9,8.2,8,5.3,9.5,"Measured","Customisable sound and strong value.","White model reportedly discounted to $159"],
 ["Sennheiser Momentum True Wireless 4",499,9.1,8.5,8.5,8.2,8,7.5,9,"Provisional","Compelling at a discounted price.","Amazon AU deal reportedly $248"],
 ["Bowers & Wilkins Pi8",649,9.6,8.2,8.5,7.6,7.9,6.5,7.5,"Claimed","Excellent sound detail at a high price.",""],
-["Bose QC Ultra Earbuds (2nd Gen)",449.95,8.9,9.8,9.3,8.7,8.2,6,7.7,"Claimed","Excellent noise cancellation and comfort.",""],
-["Denon PerL Pro",199,8.8,8,7.7,8,7.8,8,9.7,"Claimed","Personalised sound with a larger earbud design.",""]];
-const keys=["sound","anc","comfort","calls","iphone","battery","custom"],labels=["Sound quality","Noise cancellation","Comfort","Microphone / calls","iPhone compatibility","Battery life","Customisation"],defaults=[30,10,20,5,15,15,5];let weights=[...defaults],selected=0,sort=-1;const $=id=>document.getElementById(id),money=n=>n.toLocaleString("en-AU",{style:"currency",currency:"AUD",maximumFractionDigits:n%1?2:0}),val=(b,k)=>b[k+2],weighted=b=>weights.reduce((s,w,k)=>s+w*(k===5?Math.min(10,val(b,k)/12*10):val(b,k)),0)/Math.max(1,weights.reduce((a,b)=>a+b,0)),ranked=()=>[...buds].sort((a,b)=>sort<0?weighted(b)-weighted(a):val(b,sort)-val(a,sort));
-function render(){let b=buds[selected];$("position").textContent="MODEL "+(selected+1)+" OF 9 · RANK #"+(ranked().indexOf(b)+1);$("name").textContent=b[0];$("price").textContent=money(b[1]);$("score").textContent=weighted(b).toFixed(2);$("note").textContent=b[10];$("deal").textContent=b[11];$("model").value=selected;$("prev").disabled=selected===0;$("next").disabled=selected===8;
-$("metrics").innerHTML=labels.map((l,k)=>'<div class="metric"><div class="row"><span>'+l+'</span><strong>'+(k===5?val(b,k)+" h":val(b,k).toFixed(1)+"/10")+'</strong></div><div class="bar"><div class="fill" style="width:"+(k===5?val(b,k)/12.2*100:val(b,k)*10)+'%"></div></div></div>').join("")+"<small>Battery source: "+b[9]+".</small>";
-$("ranking").innerHTML=ranked().map((x,i)=>{let v=sort<0?weighted(x):val(x,sort),pct=sort===5?v/12.2*100:v*10;return '<div class="rank"><div class="row"><small>'+(i+1)+'. '+x[0]+'</small><strong>'+(sort===5?v+" h":v.toFixed(2))+'</strong></div><div class="bar"><div class="fill" style="width:'+pct+'%"></div></div></div>'}).join("");
-$("weights").innerHTML=labels.map((l,k)=>'<div class="weight"><div class="row"><label for="w'+k+'">'+l+'</label><strong>'+weights[k]+' points</strong></div><input type="range" min="0" max="50" step="5" id="w'+k+'" value="'+weights[k]+'"></div>').join("");weights.forEach((_,k)=>$("w"+k).oninput=e=>{weights[k]=+e.target.value;render()});
-$("head").innerHTML="<tr>"+["Model","Price (AUD)",...labels,"Weighted score"].map(x=>"<th>"+x+"</th>").join("")+"</tr>";
-$("body").innerHTML=ranked().map(x=>'<tr class="'+(x===b?"active":"")+'"><td>'+x[0]+'</td><td>'+money(x[1])+'</td>'+keys.map((_,k)=>"<td>"+val(x,k)+(k===5?" h":"")+"</td>").join("")+"<td>"+weighted(x).toFixed(2)+"</td></tr>").join("")}
-$("sort").innerHTML='<option value="-1">Weighted overall</option>'+labels.map((l,k)=>'<option value="'+k+'">'+l+'</option>').join("");$("sort").onchange=e=>{sort=+e.target.value;render()};$("model").oninput=e=>{selected=+e.target.value;render()};$("prev").onclick=()=>{selected=Math.max(0,selected-1);render()};$("next").onclick=()=>{selected=Math.min(8,selected+1);render()};$("reset").onclick=()=>{weights=[...defaults];render()};
-$("export").onclick=()=>{let rows=[["Model","Price AUD",...labels,"Weighted score"],...ranked().map(x=>[x[0],x[1],...keys.map((_,k)=>val(x,k)),weighted(x).toFixed(2)])];let csv=rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(",")).join("\r\n");let url=URL.createObjectURL(new Blob([csv],{type:"text/csv"})),a=document.createElement("a");a.href=url;a.download="earbuds-comparison.csv";a.click();URL.revokeObjectURL(url)};
-let start=null;$("swipe").addEventListener("touchstart",e=>{if(e.target.closest("input,button"))return;start=e.touches[0].clientX},{passive:true});$("swipe").addEventListener("touchend",e=>{if(start===null)return;let delta=e.changedTouches[0].clientX-start;if(Math.abs(delta)>60){selected=Math.max(0,Math.min(8,selected+(delta<0?1:-1)));render()}start=null},{passive:true});render();
+["Bose QC Ultra Earbuds (2nd Gen)",449.95,8.9,9.8,9.3,8.7,8.2,6,7.7,"Claimed","Excellent ANC and comfort.",""],
+["Denon PerL Pro",199,8.8,8,7.7,8,7.8,8,9.7,"Claimed","Personalised sound with a larger fit.",""]
+];
+const labels=["Sound quality","Noise cancellation","Comfort","Microphone / calls","iPhone compatibility","Battery life","Customisation"];
+const defaults=[30,10,20,5,15,15,5];
+let weights=[...defaults],selected=0,sort=-1;
+const el=id=>document.getElementById(id);
+const val=(b,k)=>b[k+2];
+const money=n=>n.toLocaleString("en-AU",{style:"currency",currency:"AUD",maximumFractionDigits:n%1?2:0});
+const weighted=b=>weights.reduce((total,w,k)=>total+w*(k===5?Math.min(10,val(b,k)/12*10):val(b,k)),0)/Math.max(1,weights.reduce((a,b)=>a+b,0));
+const ranked=()=>[...buds].sort((a,b)=>sort===-1?weighted(b)-weighted(a):val(b,sort)-val(a,sort));
+function render(){
+ const b=buds[selected];
+ el("position").textContent="MODEL "+(selected+1)+" OF 9 · RANK #"+(ranked().indexOf(b)+1);
+ el("name").textContent=b[0];el("price").textContent=money(b[1]);
+ el("score").textContent=weighted(b).toFixed(2);el("note").textContent=b[10];el("deal").textContent=b[11];
+ el("model").value=selected;el("prev").disabled=selected===0;el("next").disabled=selected===8;
+ el("metrics").innerHTML=labels.map((label,k)=>{
+  const v=val(b,k),pct=k===5?v/12.2*100:v*10;
+  return '<div class="metric"><div class="row"><span>'+label+'</span><strong>'+(k===5?v+' h':v.toFixed(1)+'/10')+'</strong></div><div class="bar"><div class="fill" style="width:'+pct+'%"></div></div></div>';
+ }).join("")+"<small>Battery figure: "+b[9]+".</small>";
+ el("ranking").innerHTML=ranked().map((x,i)=>{
+  const v=sort===-1?weighted(x):val(x,sort),pct=sort===5?v/12.2*100:v*10;
+  return '<div class="rank"><div class="row"><small>'+(i+1)+'. '+x[0]+'</small><strong>'+(sort===5?v+' h':v.toFixed(2))+'</strong></div><div class="bar"><div class="fill" style="width:'+pct+'%"></div></div></div>';
+ }).join("");
+ el("weights").innerHTML=labels.map((label,k)=>'<div class="weight"><div class="row"><label for="w'+k+'">'+label+'</label><strong>'+weights[k]+' points</strong></div><input type="range" min="0" max="50" step="5" id="w'+k+'" value="'+weights[k]+'"></div>').join("");
+ weights.forEach((_,k)=>{el("w"+k).oninput=e=>{weights[k]=+e.target.value;render();};});
+ el("head").innerHTML="<tr>"+["Model","Price (AUD)",...labels,"Weighted score"].map(x=>"<th>"+x+"</th>").join("")+"</tr>";
+ el("body").innerHTML=ranked().map(x=>'<tr class="'+(x===b?'active':'')+'"><td>'+x[0]+'</td><td>'+money(x[1])+'</td>'+labels.map((_,k)=>'<td>'+val(x,k)+(k===5?' h':'')+'</td>').join("")+'<td>'+weighted(x).toFixed(2)+'</td></tr>').join("");
+}
+el("sort").innerHTML='<option value="-1">Weighted overall</option>'+labels.map((label,k)=>'<option value="'+k+'">'+label+'</option>').join("");
+el("sort").onchange=e=>{sort=+e.target.value;render();};
+el("model").oninput=e=>{selected=+e.target.value;render();};
+el("prev").onclick=()=>{selected=Math.max(0,selected-1);render();};
+el("next").onclick=()=>{selected=Math.min(8,selected+1);render();};
+el("reset").onclick=()=>{weights=[...defaults];render();};
+el("export").onclick=()=>{
+ const rows=[["Model","Price AUD",...labels,"Weighted score"],...ranked().map(x=>[x[0],x[1],...labels.map((_,k)=>val(x,k)),weighted(x).toFixed(2)])];
+ const csv=rows.map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(",")).join("\r\n");
+ const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+ const link=document.createElement("a");link.href=url;link.download="earbuds-comparison.csv";link.click();URL.revokeObjectURL(url);
+};
+let start=null;
+el("swipe").addEventListener("touchstart",e=>{if(e.target.closest("input,button"))return;start=e.touches[0].clientX;},{passive:true});
+el("swipe").addEventListener("touchend",e=>{if(start===null)return;const dx=e.changedTouches[0].clientX-start;if(Math.abs(dx)>60){selected=Math.max(0,Math.min(8,selected+(dx<0?1:-1)));render();}start=null;},{passive:true});
+render();
 </script></body></html>
